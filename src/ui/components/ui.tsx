@@ -142,7 +142,14 @@ export function Menu({ children, trigger, label = "More actions", btnClass = "ic
   btnClass?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [up, setUp] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const toggle = () => {
+    // Open upward when there isn't room below, e.g. on the last rows of a list.
+    const r = ref.current?.getBoundingClientRect();
+    setUp(Boolean(r && innerHeight - r.bottom < 200 && r.top > 200));
+    setOpen(!open);
+  };
   useEffect(() => {
     if (!open) return;
     const off = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
@@ -151,10 +158,10 @@ export function Menu({ children, trigger, label = "More actions", btnClass = "ic
   }, [open]);
   return (
     <div ref={ref} style="position:relative">
-      <button type="button" class={btnClass} aria-label={label} aria-expanded={open} onClick={() => setOpen(!open)}>
+      <button type="button" class={btnClass} aria-label={label} aria-expanded={open} onClick={toggle}>
         {trigger ?? <Icon name="more" />}
       </button>
-      {open && <div class="menu">{children(() => setOpen(false))}</div>}
+      {open && <div class={up ? "menu up" : "menu"}>{children(() => setOpen(false))}</div>}
     </div>
   );
 }

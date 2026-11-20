@@ -22,7 +22,7 @@ app.use("/_/api/*", async (c, next) => {
   if (!isAdminHost(c.env, c.req.url)) return c.json({ error: "Not found" }, 404);
   await ensureSchema(c.env);
   await next();
-  c.header("cache-control", "no-store");
+  if (!c.res.headers.has("cache-control")) c.header("cache-control", "no-store");
 });
 app.route("/_/api/auth", authRoutes);
 app.route("/_/api", apiRoutes);

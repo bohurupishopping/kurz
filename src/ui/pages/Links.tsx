@@ -7,6 +7,18 @@ import { Confirm, CopyButton, Menu, Spinner, toast, useAsync } from "../componen
 import { LinkForm } from "../components/LinkForm";
 import { QrModal } from "../components/QrModal";
 
+/** The destination site's icon, served through the Worker. Falls back to its first letter. */
+function SiteIcon({ url, off }: { url: string; off: boolean }) {
+  const host = hostOf(url);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [host]);
+  return (
+    <span class={`favicon${off ? " off" : ""}${failed || !host ? "" : " img"}`} aria-hidden="true">
+      {failed || !host ? host[0] : <img src={`/_/api/favicon/${encodeURIComponent(host)}`} alt="" loading="lazy" onError={() => setFailed(true)} />}
+    </span>
+  );
+}
+
 export function linkStatus(l: LinkItem) {
   if (l.disabled) return { label: "Disabled", cls: "danger" };
   if (l.expires_at && l.expires_at < Date.now()) return { label: "Expired", cls: "warn" };
@@ -167,7 +179,7 @@ export function LinksPage() {
         ) : (
           data?.links.map((l) => (
             <div class="link-row" key={l.id}>
-              <span class={`favicon${linkStatus(l) ? " off" : ""}`} aria-hidden="true">{hostOf(l.url)[0]}</span>
+              <SiteIcon url={l.url} off={Boolean(linkStatus(l))} />
               <div class="link-main">
                 <div class="short">
                   <a href={l.short_url} target="_blank" rel="noopener" title={l.short_url}>{shortDisplay(l.short_url)}</a>

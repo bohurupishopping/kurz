@@ -179,12 +179,15 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 .filters .select { width: auto; flex: 0 0 auto; }
 .count { color: var(--muted); font-size: 13px; margin-left: auto; padding: 0 4px; }
 
-.links { overflow: hidden; }
 .link-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) 84px 96px auto; gap: 16px; align-items: center; padding: 14px 18px; border-top: 1px solid var(--line-soft); transition: background 0.1s; }
-.link-row:first-child { border-top: 0; }
+.link-row:first-child { border-top: 0; border-radius: 15px 15px 0 0; }
+.link-row:last-child { border-radius: 0 0 15px 15px; }
+.link-row:only-child { border-radius: 15px; }
 .link-row:hover { background: rgb(255 255 255 / 0.025); }
 .favicon { width: 36px; height: 36px; border-radius: 10px; background: var(--secondary); display: grid; place-items: center; color: var(--fg-2); font-weight: 600; font-size: 14px; text-transform: uppercase; }
 .favicon.off { opacity: 0.45; }
+.favicon.img { background: #ededed; }
+.favicon img { width: 20px; height: 20px; border-radius: 4px; display: block; }
 .link-main { min-width: 0; }
 .short { display: flex; align-items: center; gap: 4px; font-weight: 500; min-width: 0; font-size: 14.5px; }
 .short a { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -272,6 +275,7 @@ details.section > .inner { padding: 14px; display: grid; gap: 12px; }
 .rule { display: grid; grid-template-columns: 110px 1fr 1.6fr auto; gap: 8px; }
 @media (max-width: 560px) { .rule { grid-template-columns: 1fr 1fr; } }
 
+.menu.up { top: auto; bottom: calc(100% + 4px); }
 .menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 180px; background: var(--surface-2); border-radius: 12px; box-shadow: var(--shadow); padding: 4px; animation: pop 0.1s ease-out; }
 .menu a, .menu button { text-decoration: none; display: flex; align-items: center; gap: 9px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; text-align: left; }
 .menu a svg, .menu button svg { color: var(--muted); }

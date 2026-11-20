@@ -172,6 +172,27 @@ api.get("/stats", async (c) => {
   });
 });
 
+// ---------- Site icons ----------
+
+// Destination favicons for the links list. Fetched here so the browser never
+// calls a third party, and cached at the edge for a week.
+api.get("/favicon/:host", async (c) => {
+  const host = c.req.param("host").toLowerCase();
+  if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(host) || host.length > 253) return c.body(null, 404);
+  const res = await fetch(`https://icons.duckduckgo.com/ip3/${host}.ico`, {
+    cf: { cacheTtl: 604800, cacheEverything: true },
+  }).catch(() => null);
+  const type = res?.headers.get("content-type") ?? "";
+  // No SVG: it could carry script, and this is served from the dashboard's origin.
+  if (!res?.ok || !type.startsWith("image/") || type.includes("svg")) return c.body(null, 404, { "cache-control": "private, max-age=86400" });
+  return new Response(res.body, {
+    headers: { "content-type": type, "cache-control": "private, max-age=604800",
+      "x-content-type-options": "nosniff",
+      "content-security-policy": "default-src 'none'; sandbox",
+    },
+  });
+});
+
 // ---------- Domains ----------
 
 api.get("/domains", async (c) => {
