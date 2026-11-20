@@ -7,10 +7,12 @@ import { Logo } from "../components/Icon";
 function AuthShell({ children, foot }: { children: ComponentChildren; foot?: ComponentChildren }) {
   return (
     <div class="auth">
-      <div class="auth-card">
-        <div class="brand"><Logo /><span>Kurz</span></div>
-        <div class="card">{children}</div>
-        {foot && <div class="auth-foot">{foot}</div>}
+      <div class="auth-top"><Logo /> Kurz</div>
+      <div class="auth-body">
+        <div class="auth-card">
+          {children}
+          {foot && <div class="auth-foot">{foot}</div>}
+        </div>
       </div>
     </div>
   );
@@ -45,14 +47,14 @@ export function Setup({ onDone, emailHint }: { onDone: () => void; emailHint: st
   });
   return (
     <AuthShell>
-      <h1>Welcome to Kurz</h1>
-      <p>Create the admin account for this instance. Your email is only used for password resets.</p>
+      <h1>Set up Kurz</h1>
+      <p>Create the admin account. Your email is only used for password resets.</p>
       <form onSubmit={submit}>
         <label class="field"><span>Email</span><input class="input" type="email" required autoFocus value={email} onInput={(e) => setEmail(e.currentTarget.value)} autocomplete="email" /></label>
         <label class="field"><span>Password</span><input class="input" type="password" required minLength={8} value={password} onInput={(e) => setPassword(e.currentTarget.value)} autocomplete="new-password" placeholder="At least 8 characters" /></label>
         <label class="field"><span>Confirm password</span><input class="input" type="password" required value={confirm} onInput={(e) => setConfirm(e.currentTarget.value)} autocomplete="new-password" /></label>
         {error && <p class="error">{error}</p>}
-        <button class="btn btn-primary" disabled={busy}>{busy ? "Setting up…" : "Create admin"}</button>
+        <button class="btn btn-primary btn-block" disabled={busy}>{busy ? "Setting up…" : "Create admin"}</button>
       </form>
     </AuthShell>
   );
@@ -65,13 +67,13 @@ export function Login({ onDone }: { onDone: () => void }) {
     onDone();
   });
   return (
-    <AuthShell foot={<Link href="/forgot">Forgot password?</Link>}>
-      <h1>Sign in</h1>
-      <p>Enter your admin password.</p>
+    <AuthShell foot={<>Forgot your password? <Link href="/forgot">Reset it</Link></>}>
+      <h1>Log in to Kurz</h1>
+      <p>Welcome back. Enter your admin password.</p>
       <form onSubmit={submit}>
         <input class="input" type="password" required autoFocus value={password} onInput={(e) => setPassword(e.currentTarget.value)} autocomplete="current-password" placeholder="Password" aria-label="Password" />
         {error && <p class="error">{error}</p>}
-        <button class="btn btn-primary" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+        <button class="btn btn-primary btn-block" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
       </form>
     </AuthShell>
   );
@@ -85,7 +87,7 @@ export function Forgot({ emailEnabled }: { emailEnabled: boolean }) {
     setSent(true);
   });
   return (
-    <AuthShell foot={<Link href="/login">Back to sign in</Link>}>
+    <AuthShell foot={<>Remembered it? <Link href="/login">Log in</Link></>}>
       <h1>Reset password</h1>
       {!emailEnabled ? (
         <>
@@ -93,14 +95,14 @@ export function Forgot({ emailEnabled }: { emailEnabled: boolean }) {
           <div class="token-box">npm run set-password</div>
         </>
       ) : sent ? (
-        <p style="margin:0">If <b>{email}</b> is the admin email, a reset link is on its way. It's valid for 30 minutes.</p>
+        <p>If <b style="color:var(--fg);font-weight:500">{email}</b> is the admin email, a reset link is on its way. It's valid for 30 minutes.</p>
       ) : (
         <>
           <p>Enter the admin email and we'll send you a reset link.</p>
           <form onSubmit={submit}>
             <input class="input" type="email" required autoFocus value={email} onInput={(e) => setEmail(e.currentTarget.value)} placeholder="you@example.com" aria-label="Email" autocomplete="email" />
             {error && <p class="error">{error}</p>}
-            <button class="btn btn-primary" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</button>
+            <button class="btn btn-primary btn-block" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</button>
           </form>
         </>
       )}
@@ -119,14 +121,14 @@ export function Reset({ onDone }: { onDone: () => void }) {
     onDone();
   });
   return (
-    <AuthShell foot={<Link href="/login">Back to sign in</Link>}>
+    <AuthShell foot={<>Remembered it? <Link href="/login">Log in</Link></>}>
       <h1>Choose a new password</h1>
       <p>You'll be signed out on all other devices.</p>
       <form onSubmit={submit}>
         <label class="field"><span>New password</span><input class="input" type="password" required minLength={8} autoFocus value={password} onInput={(e) => setPassword(e.currentTarget.value)} autocomplete="new-password" /></label>
         <label class="field"><span>Confirm</span><input class="input" type="password" required value={confirm} onInput={(e) => setConfirm(e.currentTarget.value)} autocomplete="new-password" /></label>
         {error && <p class="error">{error}</p>}
-        <button class="btn btn-primary" disabled={busy || !token}>{busy ? "Saving…" : "Set password"}</button>
+        <button class="btn btn-primary btn-block" disabled={busy || !token}>{busy ? "Saving…" : "Set password"}</button>
       </form>
     </AuthShell>
   );

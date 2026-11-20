@@ -253,12 +253,12 @@ function ImportExport() {
 export function SettingsPage() {
   const s = useAsync(() => api<SettingsData>("/settings"), []);
   return (
-    <div class="container" style="max-width:760px">
-      <div class="page-head"><div><h1>Settings</h1></div></div>
+    <div class="container">
+      <div class="page-head"><div><h1>Settings</h1><p>Defaults, account, API access and data.</p></div></div>
       {!s.data ? (
         <Spinner />
       ) : (
-        <div class="stack">
+        <div class="stack" style="max-width:760px">
           <General s={s.data} reload={s.reload} />
           <Account s={s.data} reload={s.reload} />
           <Tokens />

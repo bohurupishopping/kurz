@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api, type Domain, type LinkItem } from "../lib/api";
 import { Link, navigate } from "../lib/router";
-import { compact, copyText, fullDate, relTime, shortDisplay } from "../lib/format";
+import { compact, copyText, fullDate, hostOf, num, relTime, shortDisplay } from "../lib/format";
 import { Icon } from "../components/Icon";
 import { Confirm, CopyButton, Menu, Spinner, toast, useAsync } from "../components/ui";
 import { LinkForm } from "../components/LinkForm";
@@ -107,10 +107,17 @@ export function LinksPage() {
 
   return (
     <div class="container">
+      <div class="page-head">
+        <div>
+          <h1>Links</h1>
+          <p>Shorten, share and track every click.</p>
+        </div>
+      </div>
       <form class="quick" onSubmit={quickCreate}>
         <div class="input-group">
           <span class="addon"><Icon name="link" /></span>
           <input ref={urlInput} class="input" placeholder="Paste a long URL to shorten…" value={quickUrl} onInput={(e) => setQuickUrl(e.currentTarget.value)} aria-label="URL to shorten" autoFocus />
+          {!quickUrl && <span class="addon" aria-hidden="true"><kbd>/</kbd></span>}
         </div>
         <div class="input-group slug">
           <input class="input" placeholder="custom-slug (optional)" value={quickSlug} onInput={(e) => setQuickSlug(e.currentTarget.value)} aria-label="Custom slug" />
@@ -143,6 +150,7 @@ export function LinksPage() {
           <option value="oldest">Oldest</option>
           <option value="clicks">Most clicks</option>
         </select>
+        {data && <span class="count">{num(data.total)} {data.total === 1 ? "link" : "links"}</span>}
       </div>
 
       <div class="card links">
@@ -152,29 +160,29 @@ export function LinksPage() {
           <div class="empty">{list.error}</div>
         ) : data && data.links.length === 0 ? (
           <div class="empty">
-            <Icon name="link" size={28} />
+            <span class="empty-icon"><Icon name={filtered ? "search" : "link"} size={20} /></span>
             <h3>{filtered ? "No links match" : "No links yet"}</h3>
             <p>{filtered ? "Try a different search or filter." : "Paste a URL above to create your first short link."}</p>
           </div>
         ) : (
           data?.links.map((l) => (
             <div class="link-row" key={l.id}>
+              <span class={`favicon${linkStatus(l) ? " off" : ""}`} aria-hidden="true">{hostOf(l.url)[0]}</span>
               <div class="link-main">
                 <div class="short">
                   <a href={l.short_url} target="_blank" rel="noopener" title={l.short_url}>{shortDisplay(l.short_url)}</a>
                   <CopyButton text={l.short_url} />
                 </div>
-                <div class="dest" title={l.url}>{l.title ? <><b style="color:var(--fg-2);font-weight:550">{l.title}</b> · </> : null}{shortDisplay(l.url)}</div>
+                <div class="dest" title={l.url}>{l.title ? <><span style="color:var(--fg-2)">{l.title}</span> · </> : null}{shortDisplay(l.url)}</div>
                 <LinkBadges l={l} onTag={(t) => { setTag(t); setPage(1); }} />
               </div>
-              <Link href={`/links/${l.id}`} class="clicks-cell" style="text-decoration:none">
-                {compact(l.clicks)}
-                <small>clicks</small>
+              <Link href={`/links/${l.id}`} class="clicks-cell" title="View stats">
+                <b>{compact(l.clicks)}</b>
+                <small>{l.clicks === 1 ? "click" : "clicks"}</small>
               </Link>
               <div class="date-cell" title={fullDate(l.created_at)}>{relTime(l.created_at)}</div>
               <div class="actions">
                 <button class="icon-btn" title="QR code" aria-label="QR code" onClick={() => setQr(l)}><Icon name="qr" /></button>
-                <button class="icon-btn" title="Stats" aria-label="Stats" onClick={() => navigate(`/links/${l.id}`)}><Icon name="chart" /></button>
                 <button class="icon-btn" title="Edit" aria-label="Edit" onClick={() => setEditing(l)}><Icon name="edit" /></button>
                 <Menu>
                   {(close) => (

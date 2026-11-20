@@ -19,9 +19,11 @@ export function assertPassword(pw: unknown): string {
 
 auth.get("/status", async (c) => {
   const s = await getSettings(c.env);
+  const authed = Boolean(await currentSession(c));
   return c.json({
     setup: Boolean(s.admin_password),
-    authed: Boolean(await currentSession(c)),
+    authed,
+    email: authed ? (s.admin_email ?? null) : null,
     email_enabled: emailEnabled(c.env),
     admin_email_hint: c.env.ADMIN_EMAIL || null,
   });
@@ -87,10 +89,10 @@ auth.post("/forgot", async (c) => {
       "Reset your Kurz password",
       `Someone asked to reset the password for your Kurz admin.\n\nReset it here (valid for 30 minutes):\n${link}\n\nIf this wasn't you, ignore this email.`,
       `<div style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1c1917">
-<p style="color:#ea580c;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase">Kurz</p>
+<p style="font-weight:600;font-size:15px;margin:0 0 20px">Kurz</p>
 <h2 style="margin:0 0 8px">Reset your password</h2>
 <p style="color:#57534e">Someone asked to reset the password for your Kurz admin. This link is valid for 30 minutes.</p>
-<p><a href="${esc(link)}" style="display:inline-block;background:#ea580c;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600">Reset password</a></p>
+<p><a href="${esc(link)}" style="display:inline-block;background:#212121;color:#fff;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:600">Reset password</a></p>
 <p style="color:#a8a29e;font-size:13px">If this wasn't you, ignore this email.</p></div>`,
     );
   }

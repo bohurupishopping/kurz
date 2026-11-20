@@ -90,8 +90,7 @@ export function Confirm(props: { title: string; text: string; action: string; on
         <>
           <button class="btn" type="button" onClick={props.onClose}>Cancel</button>
           <button
-            class="btn btn-primary"
-            style="background:var(--danger);border-color:var(--danger);color:#fff"
+            class="btn btn-solid-danger"
             type="button"
             disabled={busy}
             onClick={async () => {

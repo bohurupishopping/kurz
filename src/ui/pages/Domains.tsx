@@ -78,7 +78,7 @@ export function DomainsPage() {
             <Spinner />
           ) : list.data!.length === 0 ? (
             <div class="empty" style="padding:24px">
-              <Icon name="globe" size={28} />
+              <span class="empty-icon"><Icon name="globe" size={20} /></span>
               <h3>No custom domains yet</h3>
               <p>Links work on <b>{location.host}</b> right now. Add a domain to use your own.</p>
             </div>
@@ -108,7 +108,7 @@ export function DomainsPage() {
         <div class="card card-pad">
           <h2>Connect a domain in Cloudflare</h2>
           <p class="sub">The domain's DNS must be on Cloudflare. It takes about a minute.</p>
-          <ol style="margin:0;padding-left:20px;display:grid;gap:6px;color:var(--fg-2)">
+          <ol class="steps">
             <li>Open the Cloudflare dashboard → <b>Workers & Pages</b> → <b>kurz</b>.</li>
             <li>Go to <b>Settings → Domains & Routes</b> → <b>Add → Custom domain</b>.</li>
             <li>Enter the hostname (e.g. <code>go.example.com</code>). Cloudflare creates the DNS record and certificate.</li>

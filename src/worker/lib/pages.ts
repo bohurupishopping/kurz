@@ -5,19 +5,19 @@ export function esc(s: string | null | undefined): string {
 }
 
 const STYLE = `
-:root{--bg:#fafaf9;--fg:#1c1917;--muted:#78716c;--line:#e7e5e4;--card:#fff;--accent:#ea580c;--accent-fg:#fff}
-@media (prefers-color-scheme:dark){:root{--bg:#0c0a09;--fg:#f5f5f4;--muted:#a8a29e;--line:#292524;--card:#1c1917;--accent:#fb923c;--accent-fg:#1c1917}}
-*{box-sizing:border-box}html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--fg);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:16px}
-main{width:100%;max-width:360px;text-align:center}
-.mark{font-weight:700;letter-spacing:-.02em;color:var(--accent);font-size:13px;text-transform:uppercase}
-h1{font-size:22px;letter-spacing:-.02em;margin:12px 0 6px}
-p{color:var(--muted);margin:0 0 20px}
-form{display:grid;gap:10px}
-input{font:inherit;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);outline:none}
-input:focus{border-color:var(--accent)}
-button{font:inherit;font-weight:600;padding:11px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-fg);cursor:pointer}
-.err{color:#dc2626;font-size:14px;margin:0}
+:root{color-scheme:dark;--bg:#212121;--fg:#ededed;--muted:#afafaf;--line:rgb(255 255 255/.15);--primary:#f9f9f9;--primary-fg:#0d0d0d;--brand:#3a83f7}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;display:grid;place-items:start center;min-height:100vh;padding:18vh 16px 32px}
+main{width:100%;max-width:360px}
+.mark{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--primary);color:var(--primary-fg);margin-bottom:24px}
+h1{font-size:28px;line-height:36px;font-weight:400;letter-spacing:-.02em;margin:0 0 6px}
+p{color:var(--muted);margin:0 0 28px}
+form{display:grid;gap:12px}
+input{font:inherit;height:42px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--fg);outline:none}
+input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgb(58 131 247/.25)}
+button{font:inherit;font-weight:500;height:42px;border-radius:8px;border:0;background:var(--primary);color:var(--primary-fg);cursor:pointer}
+button:hover{background:rgb(249 249 249/.85)}
+.err{color:#ff6b6b;font-size:14px;margin:0}
 `;
 
 function page(title: string, body: string, status = 200): Response {
@@ -29,17 +29,17 @@ function page(title: string, body: string, status = 200): Response {
 }
 
 export function notFoundPage(): Response {
-  return page("Link not found", `<div class="mark">Kurz</div><h1>Link not found</h1><p>This short link doesn't exist or was removed.</p>`, 404);
+  return page("Link not found", `<div class="mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 13l9-9M10.5 10 17 20"/></svg></div><h1>Link not found</h1><p>This short link doesn't exist or was removed.</p>`, 404);
 }
 
 export function expiredPage(): Response {
-  return page("Link expired", `<div class="mark">Kurz</div><h1>This link has expired</h1><p>It's no longer available.</p>`, 410);
+  return page("Link expired", `<div class="mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 13l9-9M10.5 10 17 20"/></svg></div><h1>This link has expired</h1><p>It's no longer available.</p>`, 410);
 }
 
 export function passwordPage(error = false): Response {
   return page(
     "Password required",
-    `<div class="mark">Kurz</div><h1>Password required</h1><p>This link is protected. Enter the password to continue.</p>
+    `<div class="mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 13l9-9M10.5 10 17 20"/></svg></div><h1>Password required</h1><p>This link is protected. Enter the password to continue.</p>
 <form method="post"><input type="password" name="password" placeholder="Password" autofocus required autocomplete="current-password">${
       error ? `<p class="err">Wrong password. Try again.</p>` : ""
     }<button type="submit">Continue</button></form>`,

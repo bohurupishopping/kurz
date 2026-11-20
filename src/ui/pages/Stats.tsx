@@ -59,17 +59,17 @@ export function LinkDetailPage({ id }: { id: number }) {
       <Link href="/" class="back"><Icon name="back" size={14} /> All links</Link>
       <div class="page-head">
         <div style="min-width:0">
-          <h1 class="short" style="font-size:22px">
+          <h1 class="short" style="font-size:28px;font-weight:400;letter-spacing:-0.02em">
             <a href={l.short_url} target="_blank" rel="noopener">{shortDisplay(l.short_url)}</a>
             <CopyButton text={l.short_url} />
           </h1>
-          <p class="dest" style="font-size:14px">→ <a href={l.url} target="_blank" rel="noopener noreferrer">{l.url}</a></p>
+          <p class="dest" style="font-size:14px;margin:4px 0 0">→ <a href={l.url} target="_blank" rel="noopener noreferrer">{l.url}</a></p>
           <LinkBadges l={l} />
         </div>
         <div class="row">
           <button class="btn" onClick={() => setQr(true)}><Icon name="qr" size={14} /> QR</button>
           <button class="btn" onClick={() => setEditing(true)}><Icon name="edit" size={14} /> Edit</button>
-          <button class="btn btn-danger" onClick={() => setDeleting(true)} aria-label="Delete"><Icon name="trash" size={14} /></button>
+          <button class="btn btn-danger" onClick={() => setDeleting(true)} aria-label="Delete" title="Delete"><Icon name="trash" size={14} /></button>
         </div>
       </div>
 
@@ -77,11 +77,11 @@ export function LinkDetailPage({ id }: { id: number }) {
         <div class="card kpi"><div class="label">Clicks · last {days}d</div><div class="value">{stats.data ? num(stats.data.total) : "–"}</div></div>
         <div class="card kpi"><div class="label">All-time clicks</div><div class="value">{num(l.clicks)}</div></div>
         <div class="card kpi"><div class="label">Bots filtered · {days}d</div><div class="value">{stats.data ? num(stats.data.bots) : "–"}</div></div>
-        <div class="card kpi"><div class="label">Created</div><div class="value" style="font-size:16px;margin-top:8px">{fullDate(l.created_at)}</div></div>
+        <div class="card kpi"><div class="label">Created</div><div class="value sm">{fullDate(l.created_at)}</div></div>
       </div>
 
       <div class="page-head" style="margin-bottom:12px">
-        <h2 style="margin:0;font-size:16px">Clicks</h2>
+        <h2 class="section-title">Clicks</h2>
         <RangePicker days={days} set={setDays} />
       </div>
       {stats.data ? <StatsBody s={stats.data} /> : <Spinner />}
