@@ -33,7 +33,7 @@ function StatsBody({ s }: { s: Stats }) {
       <div class="breakdowns">
         <Breakdown title="Referrers" rows={s.referrers} />
         <Breakdown title="Countries" rows={s.countries} kind="country" />
-        <Breakdown title="Devices" rows={s.devices} />
+        <Breakdown title="Devices" rows={s.devices} kind="device" />
         <Breakdown title="Browsers" rows={s.browsers} />
         <Breakdown title="Operating systems" rows={s.os} />
       </div>
@@ -154,7 +154,7 @@ export function AnalyticsPage() {
             </div>
             <Breakdown title="Referrers" rows={d.referrers} />
             <Breakdown title="Countries" rows={d.countries} kind="country" />
-            <Breakdown title="Devices" rows={d.devices} />
+            <Breakdown title="Devices" rows={d.devices} kind="device" />
             <Breakdown title="Browsers" rows={d.browsers} />
             <Breakdown title="Operating systems" rows={d.os} />
           </div>

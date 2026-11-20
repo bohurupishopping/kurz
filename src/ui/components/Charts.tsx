@@ -93,7 +93,7 @@ export function ClicksChart({ data, height = 220 }: { data: { day: string; click
 }
 
 /** Ranked list with proportional background bars (referrers, countries, …). */
-export function Breakdown({ title, rows, kind }: { title: string; rows: { key: string; clicks: number }[]; kind?: "country" }) {
+export function Breakdown({ title, rows, kind }: { title: string; rows: { key: string; clicks: number }[]; kind?: "country" | "device" }) {
   const max = Math.max(...rows.map((r) => r.clicks), 1);
   return (
     <div class="card card-pad">
@@ -105,7 +105,7 @@ export function Breakdown({ title, rows, kind }: { title: string; rows: { key: s
           {rows.map((r) => (
             <div class="bar-row" key={r.key} title={`${r.key}: ${num(r.clicks)}`}>
               <div class="fill" style={{ width: `${(r.clicks / max) * 100}%` }} />
-              <span>{kind === "country" ? `${flag(r.key)}  ${countryName(r.key)}` : r.key}</span>
+              <span>{kind === "country" ? `${flag(r.key)}  ${countryName(r.key)}` : kind === "device" ? r.key.charAt(0).toUpperCase() + r.key.slice(1) : r.key}</span>
               <b>{num(r.clicks)}</b>
             </div>
           ))}
