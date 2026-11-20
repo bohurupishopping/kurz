@@ -55,9 +55,20 @@ Wrangler creates the KV namespace and D1 database on the first deploy. Then open
 
 The domain's DNS has to be on Cloudflare.
 
-1. Cloudflare dashboard → **Workers & Pages** → **kurz** → **Settings → Domains & Routes** → **Add → Custom domain**, for example `go.example.com`.
-2. In Kurz, go to **Domains → Add domain** and enter the same hostname.
-3. Choose the domain when you create links.
+**Automatic (recommended).** Connect Cloudflare once and Kurz does the rest:
+
+1. In Kurz, open **Settings → Cloudflare** and follow the link to create an API token with
+   **Workers Scripts: Edit**, **Workers Routes: Edit** and **Zone: Read**
+   (the "Edit Cloudflare Workers" template works too). Paste it and click **Connect**.
+   Prefer a secret? Run `npx wrangler secret put CF_API_TOKEN` instead.
+2. Go to **Domains → Add domain** and enter a hostname such as `go.example.com`.
+   Kurz attaches it to the Worker, and Cloudflare creates the DNS record and SSL certificate.
+   HTTPS can take a few minutes the first time.
+
+Removing a domain in Kurz also removes it from Cloudflare.
+
+**Manual.** In the Cloudflare dashboard go to **Workers & Pages → kurz → Settings → Domains & Routes → Add → Custom domain**,
+then add the same hostname in Kurz. Don't create the DNS record yourself: a plain CNAME to `*.workers.dev` gives error 525.
 
 Links set to **Any domain** work on every connected hostname. Links tied to a domain only work there.
 To keep the dashboard off your short domains, set `ADMIN_HOST` (for example `admin.example.com`).
@@ -91,6 +102,8 @@ npm run set-password -- --local # local dev
 | `ADMIN_EMAIL` | (empty) | If set, only this email can complete the first-time setup |
 | `ADMIN_HOST` | (empty) | If set, the dashboard and API are only served on this hostname |
 | `CLICK_RETENTION_DAYS` | `365` | A daily cron deletes click rows older than this (`0` keeps them forever) |
+| `WORKER_NAME` | `kurz` | Worker that custom domains get attached to. Keep it equal to `name` |
+| `CF_API_TOKEN` (secret) | — | Optional. Cloudflare token for automatic domains, instead of saving it in Settings |
 
 Global defaults (root redirect, 404 redirect, default 301/302, click tracking on or off) are set in **Settings**.
 

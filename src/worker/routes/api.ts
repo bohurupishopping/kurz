@@ -8,6 +8,7 @@ import { getStats, parseStatsQuery } from "../lib/stats";
 import { toCsv } from "../lib/csv";
 import { hashPassword, randomToken, sha256, verifyPassword } from "../lib/crypto";
 import { emailEnabled, getSettings, setSettings, syncConfig } from "../lib/settings";
+import { attachDomain, attachedHostnames, cfToken, detachDomain, verifyToken } from "../lib/cloudflare";
 import { normalizeHost, optionalUrl } from "../lib/validate";
 import { assertPassword } from "./auth";
 
@@ -176,8 +177,12 @@ api.get("/stats", async (c) => {
 api.get("/domains", async (c) => {
   const { results } = await c.env.DB.prepare(
     `SELECT d.*, (SELECT COUNT(*) FROM links l WHERE l.domain = d.hostname) AS links FROM domains d ORDER BY d.hostname`,
-  ).all();
-  return c.json(results);
+  ).all<any>();
+  // connected: true/false when Cloudflare is linked, null when we can't tell.
+  const token = await cfToken(c.env);
+  let attached: Set<string> | null = null;
+  if (token) attached = await attachedHostnames(c.env, token).catch(() => null);
+  return c.json(results.map((d) => ({ ...d, connected: attached ? attached.has(d.hostname) : null })));
 });
 
 api.post("/domains", async (c) => {
@@ -185,6 +190,11 @@ api.post("/domains", async (c) => {
   const hostname = normalizeHost(body.hostname);
   const root = optionalUrl(body.root_redirect, "Root redirect");
   const nf = optionalUrl(body.not_found_url, "Not-found URL");
+  const exists = await c.env.DB.prepare(`SELECT 1 FROM domains WHERE hostname = ?`).bind(hostname).first();
+  if (exists) throw new HttpError(409, `${hostname} is already added`);
+  // With Cloudflare linked, attach the domain to this Worker before saving it.
+  const token = await cfToken(c.env);
+  if (token) await attachDomain(c.env, token, hostname);
   try {
     const row = await c.env.DB.prepare(
       `INSERT INTO domains (hostname, root_redirect, not_found_url, created_at) VALUES (?, ?, ?, ?) RETURNING *`,
@@ -192,7 +202,7 @@ api.post("/domains", async (c) => {
       .bind(hostname, root, nf, Date.now())
       .first();
     await syncDomain(c.env, hostname, { root_redirect: root, not_found_url: nf });
-    return c.json({ ...row, links: 0 }, 201);
+    return c.json({ ...row, links: 0, connected: token ? true : null }, 201);
   } catch (e) {
     if (/UNIQUE/.test(String(e))) throw new HttpError(409, `${hostname} is already added`);
     throw e;
@@ -210,12 +220,26 @@ api.patch("/domains/:id", async (c) => {
   return c.json(row);
 });
 
+api.post("/domains/:id/connect", async (c) => {
+  const row = await c.env.DB.prepare(`SELECT hostname FROM domains WHERE id = ?`)
+    .bind(idParam(c.req.param("id")))
+    .first<{ hostname: string }>();
+  if (!row) throw new HttpError(404, "Domain not found");
+  const token = await cfToken(c.env);
+  if (!token) throw new HttpError(400, "Connect your Cloudflare account in Settings first");
+  await attachDomain(c.env, token, row.hostname);
+  return c.json({ ok: true });
+});
+
 api.delete("/domains/:id", async (c) => {
   const id = idParam(c.req.param("id"));
   const row = await c.env.DB.prepare(`SELECT hostname FROM domains WHERE id = ?`).bind(id).first<{ hostname: string }>();
   if (!row) throw new HttpError(404, "Domain not found");
   const used = await c.env.DB.prepare(`SELECT COUNT(*) AS n FROM links WHERE domain = ?`).bind(row.hostname).first<{ n: number }>();
   if (used?.n) throw new HttpError(409, `${row.hostname} still has ${used.n} link(s). Move or delete them first.`);
+  // Never detach the hostname serving this request, or the dashboard goes offline.
+  const token = await cfToken(c.env);
+  if (token && row.hostname !== new URL(c.req.url).hostname) await detachDomain(c.env, token, row.hostname);
   await c.env.DB.prepare(`DELETE FROM domains WHERE id = ?`).bind(id).run();
   await c.env.KV.delete(domainKey(row.hostname));
   return c.json({ ok: true });
@@ -260,6 +284,8 @@ api.get("/settings", async (c) => {
     track_clicks: s.track_clicks !== "0",
     email_enabled: emailEnabled(c.env),
     click_retention_days: Number(c.env.CLICK_RETENTION_DAYS ?? 365),
+    // The token itself is never sent back to the browser.
+    cloudflare: c.env.CF_API_TOKEN ? "secret" : s.cf_api_token ? "settings" : null,
   });
 });
 
@@ -276,6 +302,17 @@ api.patch("/settings", async (c) => {
   if ("root_redirect" in body) update.root_redirect = optionalUrl(body.root_redirect, "Root redirect");
   if ("not_found_url" in body) update.not_found_url = optionalUrl(body.not_found_url, "Not-found URL");
   if ("track_clicks" in body) update.track_clicks = body.track_clicks ? "1" : "0";
+  if ("cf_api_token" in body) {
+    const token = String(body.cf_api_token ?? "").trim();
+    if (token) {
+      const { accountId } = await verifyToken(token);
+      update.cf_api_token = token;
+      update.cf_account_id = accountId;
+    } else {
+      update.cf_api_token = null;
+      update.cf_account_id = null;
+    }
+  }
   await setSettings(c.env, update);
   await syncConfig(c.env);
   return c.json({ ok: true });

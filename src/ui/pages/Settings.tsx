@@ -1,5 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
-import { api } from "../lib/api";
+import { api, CF_TOKEN_URL } from "../lib/api";
 import { fullDate, relTime } from "../lib/format";
 import { parseCsv } from "../../worker/lib/csv";
 import { Icon } from "../components/Icon";
@@ -13,6 +13,53 @@ interface SettingsData {
   track_clicks: boolean;
   email_enabled: boolean;
   click_retention_days: number;
+  cloudflare: "secret" | "settings" | null;
+}
+
+function Cloudflare({ s, reload }: { s: SettingsData; reload: () => void }) {
+  const [token, setToken] = useState("");
+  const [busy, setBusy] = useState(false);
+  const save = async (value: string) => {
+    setBusy(true);
+    try {
+      await api("/settings", { method: "PATCH", body: { cf_api_token: value } });
+      toast(value ? "Cloudflare connected" : "Cloudflare disconnected");
+      setToken("");
+      reload();
+    } catch (err: any) {
+      toast(err.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div class="card card-pad" id="cloudflare">
+      <h2>Cloudflare</h2>
+      <p class="sub">Lets Kurz connect custom domains for you: it creates the DNS record and SSL certificate when you add a domain.</p>
+      {s.cloudflare === "secret" ? (
+        <p class="notice"><Icon name="check" size={14} /> Connected with the <code>CF_API_TOKEN</code> secret.</p>
+      ) : s.cloudflare === "settings" ? (
+        <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <span class="badge good"><Icon name="check" size={12} /> Connected</span>
+          <button class="btn btn-danger" disabled={busy} onClick={() => save("")}>Disconnect</button>
+        </div>
+      ) : (
+        <form class="stack" onSubmit={(e) => { e.preventDefault(); save(token); }}>
+          <ol class="steps">
+            <li>
+              <a href={CF_TOKEN_URL} target="_blank" rel="noopener">Create an API token</a> with <b>Workers Scripts: Edit</b>,{" "}
+              <b>Workers Routes: Edit</b> and <b>Zone: Read</b> (or use the “Edit Cloudflare Workers” template).
+            </li>
+            <li>Paste it below. It's stored in your D1 database and never shown again.</li>
+          </ol>
+          <div class="row" style="gap:8px">
+            <input class="input" style="flex:1" type="password" autoComplete="off" required placeholder="Cloudflare API token" value={token} onInput={(e) => setToken(e.currentTarget.value)} />
+            <button class="btn btn-primary" disabled={busy}>{busy ? "Checking…" : "Connect"}</button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
 }
 
 function General({ s, reload }: { s: SettingsData; reload: () => void }) {
@@ -252,6 +299,10 @@ function ImportExport() {
 
 export function SettingsPage() {
   const s = useAsync(() => api<SettingsData>("/settings"), []);
+  const loaded = Boolean(s.data);
+  useEffect(() => {
+    if (loaded && location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: "start" });
+  }, [loaded]);
   return (
     <div class="container">
       <div class="page-head"><div><h1>Settings</h1><p>Defaults, account, API access and data.</p></div></div>
@@ -260,6 +311,7 @@ export function SettingsPage() {
       ) : (
         <div class="stack" style="max-width:760px">
           <General s={s.data} reload={s.reload} />
+          <Cloudflare s={s.data} reload={s.reload} />
           <Account s={s.data} reload={s.reload} />
           <Tokens />
           <ImportExport />

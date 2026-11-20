@@ -308,8 +308,8 @@ code { background: var(--active); padding: 1px 5px; border-radius: 5px; }
 .list-row:last-child { padding-bottom: 0; }
 .list-row .muted { color: var(--muted); font-size: 13px; margin-top: 2px; }
 .steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; counter-reset: step; }
-.steps li { display: flex; gap: 12px; color: var(--fg-2); counter-increment: step; }
-.steps li::before { content: counter(step); flex: none; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-size: 12px; color: var(--muted); }
+.steps li { display: block; position: relative; padding: 2px 0 0 36px; min-height: 24px; color: var(--fg-2); counter-increment: step; }
+.steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-size: 12px; color: var(--muted); }
 .qr { display: grid; place-items: center; padding: 18px; background: #fff; border-radius: 14px; }
 .qr svg { width: 220px; height: 220px; }
 .back { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); text-decoration: none; font-size: 13.5px; margin-bottom: 14px; }
@@ -317,3 +317,5 @@ code { background: var(--active); padding: 1px 5px; border-radius: 5px; }
 .spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--brand); animation: spin 0.7s linear infinite; }
 .center { display: grid; place-items: center; padding: 72px; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+[id] { scroll-margin-top: 84px; }

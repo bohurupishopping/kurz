@@ -58,7 +58,21 @@ export interface Domain {
   root_redirect: string | null;
   not_found_url: string | null;
   links: number;
+  /** Attached to this Worker in Cloudflare. null when Cloudflare isn't linked. */
+  connected: boolean | null;
 }
+
+/** Opens Cloudflare's "Create API token" page with the permissions Kurz needs. */
+export const CF_TOKEN_URL =
+  "https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=" +
+  encodeURIComponent(
+    JSON.stringify([
+      { key: "workers_scripts", type: "edit" },
+      { key: "workers_routes", type: "edit" },
+      { key: "zone", type: "read" },
+    ]),
+  ) +
+  "&name=Kurz%20domains";
 
 export interface Stats {
   days: number;

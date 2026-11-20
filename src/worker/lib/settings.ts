@@ -6,7 +6,9 @@ export type SettingKey =
   | "default_redirect_type"
   | "root_redirect"
   | "not_found_url"
-  | "track_clicks";
+  | "track_clicks"
+  | "cf_api_token"
+  | "cf_account_id";
 
 export async function getSettings(env: Env): Promise<Partial<Record<SettingKey, string>>> {
   const { results } = await env.DB.prepare(`SELECT key, value FROM settings`).all<{ key: string; value: string }>();

@@ -8,6 +8,9 @@ export interface Env {
   ADMIN_HOST?: string;
   ADMIN_EMAIL?: string;
   CLICK_RETENTION_DAYS?: string;
+  /** Optional secret. Otherwise the token saved in Settings is used. */
+  CF_API_TOKEN?: string;
+  WORKER_NAME?: string;
 }
 
 export type AppEnv = {
