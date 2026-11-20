@@ -8,7 +8,7 @@ import { getStats, parseStatsQuery } from "../lib/stats";
 import { toCsv } from "../lib/csv";
 import { hashPassword, randomToken, sha256, verifyPassword } from "../lib/crypto";
 import { emailEnabled, getSettings, setSettings, syncConfig } from "../lib/settings";
-import { attachDomain, attachedHostnames, cfToken, detachDomain, verifyToken } from "../lib/cloudflare";
+import { attachDomain, attachedHostnames, cfToken, detachDomain, verifyToken, workerName } from "../lib/cloudflare";
 import { normalizeHost, optionalUrl } from "../lib/validate";
 import { assertPassword } from "./auth";
 
@@ -172,6 +172,8 @@ api.get("/stats", async (c) => {
   });
 });
 
+const reqHost = (c: { req: { url: string } }) => new URL(c.req.url).hostname;
+
 // ---------- Site icons ----------
 
 // Destination favicons for the links list. Fetched here so the browser never
@@ -202,7 +204,11 @@ api.get("/domains", async (c) => {
   // connected: true/false when Cloudflare is linked, null when we can't tell.
   const token = await cfToken(c.env);
   let attached: Set<string> | null = null;
-  if (token) attached = await attachedHostnames(c.env, token).catch(() => null);
+  if (token) {
+    attached = await workerName(c.env, token, reqHost(c))
+      .then((name) => attachedHostnames(c.env, token, name))
+      .catch(() => null);
+  }
   return c.json(results.map((d) => ({ ...d, connected: attached ? attached.has(d.hostname) : null })));
 });
 
@@ -215,7 +221,7 @@ api.post("/domains", async (c) => {
   if (exists) throw new HttpError(409, `${hostname} is already added`);
   // With Cloudflare linked, attach the domain to this Worker before saving it.
   const token = await cfToken(c.env);
-  if (token) await attachDomain(c.env, token, hostname);
+  if (token) await attachDomain(c.env, token, hostname, await workerName(c.env, token, reqHost(c)));
   try {
     const row = await c.env.DB.prepare(
       `INSERT INTO domains (hostname, root_redirect, not_found_url, created_at) VALUES (?, ?, ?, ?) RETURNING *`,
@@ -248,7 +254,7 @@ api.post("/domains/:id/connect", async (c) => {
   if (!row) throw new HttpError(404, "Domain not found");
   const token = await cfToken(c.env);
   if (!token) throw new HttpError(400, "Connect your Cloudflare account in Settings first");
-  await attachDomain(c.env, token, row.hostname);
+  await attachDomain(c.env, token, row.hostname, await workerName(c.env, token, reqHost(c)));
   return c.json({ ok: true });
 });
 
@@ -260,7 +266,9 @@ api.delete("/domains/:id", async (c) => {
   if (used?.n) throw new HttpError(409, `${row.hostname} still has ${used.n} link(s). Move or delete them first.`);
   // Never detach the hostname serving this request, or the dashboard goes offline.
   const token = await cfToken(c.env);
-  if (token && row.hostname !== new URL(c.req.url).hostname) await detachDomain(c.env, token, row.hostname);
+  if (token && row.hostname !== reqHost(c)) {
+    await detachDomain(c.env, token, row.hostname, await workerName(c.env, token, reqHost(c)));
+  }
   await c.env.DB.prepare(`DELETE FROM domains WHERE id = ?`).bind(id).run();
   await c.env.KV.delete(domainKey(row.hostname));
   return c.json({ ok: true });

@@ -49,8 +49,28 @@ export async function cfToken(env: Env): Promise<string | null> {
   return (await getSettings(env)).cf_api_token || null;
 }
 
-export function workerName(env: Env): string {
-  return env.WORKER_NAME || "kurz";
+/**
+ * The name of this Worker, which custom domains are attached to. One-click deploys
+ * can rename it, so it's worked out from the request: the first label of
+ * <name>.<subdomain>.workers.dev, or the Worker already serving this custom domain.
+ * The answer is saved so later requests from any hostname reuse it.
+ */
+export async function workerName(env: Env, token: string, requestHost: string): Promise<string> {
+  if (env.WORKER_NAME) return env.WORKER_NAME;
+  let name: string | undefined;
+  const dev = requestHost.match(/^([a-z0-9-]+)\.[a-z0-9-]+\.workers\.dev$/i);
+  if (dev) name = dev[1].toLowerCase();
+  else {
+    const accountId = await accountFor(env, token);
+    const [d] = await cf<WorkerDomain[]>(
+      token,
+      `/accounts/${accountId}/workers/domains?hostname=${encodeURIComponent(requestHost)}`,
+    ).catch(() => []);
+    name = d?.service;
+  }
+  const saved = (await getSettings(env)).cf_worker_name;
+  if (name && name !== saved) await setSettings(env, { cf_worker_name: name });
+  return name || saved || "kurz";
 }
 
 /** Check a token and return the account it belongs to. */
@@ -72,12 +92,12 @@ async function findZone(token: string, hostname: string): Promise<Zone> {
 }
 
 /** Point a hostname at this Worker. Cloudflare creates the DNS record and certificate. */
-export async function attachDomain(env: Env, token: string, hostname: string): Promise<void> {
+export async function attachDomain(env: Env, token: string, hostname: string, service: string): Promise<void> {
   const zone = await findZone(token, hostname);
   try {
     await cf<WorkerDomain>(token, `/accounts/${zone.account.id}/workers/domains`, {
       method: "PUT",
-      body: JSON.stringify({ hostname, service: workerName(env), zone_id: zone.id, environment: "production" }),
+      body: JSON.stringify({ hostname, service, zone_id: zone.id, environment: "production" }),
     });
   } catch (e) {
     if (e instanceof HttpError && /externally managed DNS|already has.*DNS record/i.test(e.message)) {
@@ -92,25 +112,25 @@ export async function attachDomain(env: Env, token: string, hostname: string): P
 }
 
 /** Remove the hostname from this Worker. Cloudflare deletes the DNS record it made. */
-export async function detachDomain(env: Env, token: string, hostname: string): Promise<void> {
+export async function detachDomain(env: Env, token: string, hostname: string, service: string): Promise<void> {
   const accountId = await accountFor(env, token);
   const found = await cf<WorkerDomain[]>(
     token,
     `/accounts/${accountId}/workers/domains?hostname=${encodeURIComponent(hostname)}`,
   );
-  for (const d of found.filter((d) => d.hostname === hostname && d.service === workerName(env))) {
+  for (const d of found.filter((d) => d.hostname === hostname && d.service === service)) {
     await cf(token, `/accounts/${accountId}/workers/domains/${d.id}`, { method: "DELETE" });
   }
 }
 
 /** Hostnames currently attached to this Worker. */
-export async function attachedHostnames(env: Env, token: string): Promise<Set<string>> {
+export async function attachedHostnames(env: Env, token: string, service: string): Promise<Set<string>> {
   const accountId = await accountFor(env, token);
   const list = await cf<WorkerDomain[]>(
     token,
-    `/accounts/${accountId}/workers/domains?service=${encodeURIComponent(workerName(env))}`,
+    `/accounts/${accountId}/workers/domains?service=${encodeURIComponent(service)}`,
   );
-  return new Set(list.filter((d) => d.service === workerName(env)).map((d) => d.hostname));
+  return new Set(list.filter((d) => d.service === service).map((d) => d.hostname));
 }
 
 async function accountFor(env: Env, token: string): Promise<string> {

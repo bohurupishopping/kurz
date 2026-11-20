@@ -8,7 +8,8 @@ export type SettingKey =
   | "not_found_url"
   | "track_clicks"
   | "cf_api_token"
-  | "cf_account_id";
+  | "cf_account_id"
+  | "cf_worker_name";
 
 export async function getSettings(env: Env): Promise<Partial<Record<SettingKey, string>>> {
   const { results } = await env.DB.prepare(`SELECT key, value FROM settings`).all<{ key: string; value: string }>();

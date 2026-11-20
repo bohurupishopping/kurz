@@ -107,7 +107,7 @@ Wrangler creates the KV namespace and D1 database on the first deploy. Then open
 
 > [!IMPORTANT]
 > The first person to open `/_/` becomes the admin, so do it right after deploying.
-> To lock setup to your email, set `ADMIN_EMAIL` in `wrangler.jsonc` before you deploy.
+> To lock setup to your email, set `ADMIN_EMAIL` (see [Configuration](#configuration)) before you deploy.
 
 ## Custom domains
 
@@ -146,7 +146,7 @@ Kurz emails reset links through Cloudflare Email Routing:
 
 1. Turn on **Email Routing** for a domain in Cloudflare (**Email → Email Routing**).
 2. Add your admin email as a **verified destination address**.
-3. Set `EMAIL_FROM` in `wrangler.jsonc` to an address on that domain, such as `kurz@example.com`, and deploy again.
+3. Set `EMAIL_FROM` to an address on that domain, such as `kurz@example.com` (see [Configuration](#configuration)).
 
 No email set up? Reset from your terminal:
 
@@ -157,15 +157,15 @@ npm run set-password -- --local # local dev
 
 ## Configuration
 
-Set these under `vars` in `wrangler.jsonc`.
+All of these are optional, and the one-click deploy doesn't ask for any of them. To use one, add a `vars` block to `wrangler.jsonc`, for example `"vars": { "ADMIN_EMAIL": "you@example.com" }`, and deploy again. You can also set them in Cloudflare under **Workers & Pages → kurz → Settings → Variables and Secrets**.
 
 | Variable | Default | What it does |
 |---|---|---|
-| `EMAIL_FROM` | empty | Sender for reset emails. Empty turns email reset off |
-| `ADMIN_EMAIL` | empty | Only this email can complete first-time setup |
-| `ADMIN_HOST` | empty | Serve the dashboard and API only on this hostname |
+| `EMAIL_FROM` | not set | Sender for reset emails. Not set means email reset is off |
+| `ADMIN_EMAIL` | not set | Only this email can complete first-time setup |
+| `ADMIN_HOST` | not set | Serve the dashboard and API only on this hostname |
 | `CLICK_RETENTION_DAYS` | `365` | Delete click records older than this. `0` keeps them forever |
-| `WORKER_NAME` | `kurz` | The Worker custom domains are attached to. Keep it the same as `name` |
+| `WORKER_NAME` | detected | The Worker custom domains are attached to. Kurz works this out itself, so you rarely need it |
 | `CF_API_TOKEN` | — | Optional secret for automatic domains, instead of saving the token in Settings |
 
 The root redirect, 404 redirect, default 301/302 and click tracking are set in **Settings**.

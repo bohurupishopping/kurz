@@ -32,18 +32,16 @@
   // Daily clean-up of old click rows and expired sessions.
   "triggers": { "crons": ["17 3 * * *"] },
 
-  "vars": {
-    // Sender for password-reset emails, e.g. "kurz@yourdomain.com".
-    "EMAIL_FROM": "",
-    // Optional: only serve the admin UI on this hostname, e.g. "admin.yourdomain.com".
-    "ADMIN_HOST": "",
-    // Optional: if set, first-time setup only accepts this email.
-    "ADMIN_EMAIL": "",
-    // Click rows older than this are deleted by the daily cron (0 = keep forever).
-    "CLICK_RETENTION_DAYS": "365",
-    // Must match "name" above. Kurz attaches custom domains to this Worker.
-    "WORKER_NAME": "kurz"
-  }
+  // Keep variables set in the Cloudflare dashboard when redeploying.
+  "keep_vars": true,
+
+  // Optional settings. Add a "vars" block to use them; all are off when missing:
+  //   EMAIL_FROM            sender for password-reset emails, e.g. "kurz@yourdomain.com"
+  //   ADMIN_EMAIL           only this email can complete first-time setup
+  //   ADMIN_HOST            serve the dashboard only on this hostname, e.g. "admin.yourdomain.com"
+  //   CLICK_RETENTION_DAYS  delete clicks older than this (default 365, 0 = keep forever)
+  //   WORKER_NAME           Worker that custom domains attach to (detected automatically)
+  // Example: "vars": { "EMAIL_FROM": "kurz@yourdomain.com" }
 
   // Custom domains: add them in the Cloudflare dashboard
   // (Workers & Pages → kurz → Settings → Domains & Routes) or here:
