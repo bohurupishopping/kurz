@@ -1,0 +1,49 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kurz",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2025-10-01",
+
+  // Admin UI (built by Vite into dist/ui/_/). The worker runs first so every
+  // path can be a short link; it hands /_/* to the assets binding itself.
+  "assets": {
+    "directory": "./dist/ui",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+
+  // Fast edge lookups for redirects. Wrangler creates these on first deploy.
+  "kv_namespaces": [{ "binding": "KV" }],
+
+  // Source of truth for links, domains, clicks, sessions. The schema is
+  // created automatically on the first admin request — no migrations step.
+  "d1_databases": [{ "binding": "DB", "database_name": "kurz" }],
+
+  // Password-reset emails via Cloudflare Email Routing (optional).
+  // Requires Email Routing on your domain and the admin email as a verified
+  // destination address. Set EMAIL_FROM below to an address on that domain.
+  "send_email": [{ "name": "EMAIL" }],
+
+  // Brute-force protection for login / password reset (5 tries per minute per IP).
+  "ratelimits": [
+    { "name": "LIMITER", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }
+  ],
+
+  // Daily clean-up of old click rows and expired sessions.
+  "triggers": { "crons": ["17 3 * * *"] },
+
+  "vars": {
+    // Sender for password-reset emails, e.g. "kurz@yourdomain.com".
+    "EMAIL_FROM": "",
+    // Optional: only serve the admin UI on this hostname, e.g. "admin.yourdomain.com".
+    "ADMIN_HOST": "",
+    // Optional: if set, first-time setup only accepts this email.
+    "ADMIN_EMAIL": "",
+    // Click rows older than this are deleted by the daily cron (0 = keep forever).
+    "CLICK_RETENTION_DAYS": "365"
+  }
+
+  // Custom domains: add them in the Cloudflare dashboard
+  // (Workers & Pages → kurz → Settings → Domains & Routes) or here:
+  // "routes": [{ "pattern": "go.example.com", "custom_domain": true }]
+}
