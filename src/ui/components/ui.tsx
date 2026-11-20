@@ -135,7 +135,12 @@ export function CopyButton({ text, label }: { text: string; label?: string }) {
   );
 }
 
-export function Menu({ children }: { children: (close: () => void) => ComponentChildren }) {
+export function Menu({ children, trigger, label = "More actions", btnClass = "icon-btn" }: {
+  children: (close: () => void) => ComponentChildren;
+  trigger?: ComponentChildren;
+  label?: string;
+  btnClass?: string;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -146,8 +151,8 @@ export function Menu({ children }: { children: (close: () => void) => ComponentC
   }, [open]);
   return (
     <div ref={ref} style="position:relative">
-      <button type="button" class="icon-btn" aria-label="More actions" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <Icon name="more" />
+      <button type="button" class={btnClass} aria-label={label} aria-expanded={open} onClick={() => setOpen(!open)}>
+        {trigger ?? <Icon name="more" />}
       </button>
       {open && <div class="menu">{children(() => setOpen(false))}</div>}
     </div>

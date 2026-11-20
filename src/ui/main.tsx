@@ -6,7 +6,7 @@ import "./styles.css";
 import { api, setUnauthorizedHandler } from "./lib/api";
 import { Link, navigate, usePath } from "./lib/router";
 import { Icon, Logo } from "./components/Icon";
-import { Spinner, Toasts } from "./components/ui";
+import { Menu, Spinner, Toasts } from "./components/ui";
 import { Forgot, Login, Reset, Setup } from "./pages/Auth";
 import { LinksPage } from "./pages/Links";
 import { AnalyticsPage, LinkDetailPage } from "./pages/Stats";
@@ -38,47 +38,38 @@ function Shell({ path, email, onLogout }: { path: string; email: string | null; 
 
   return (
     <div class="app">
-      <aside class="sidebar">
-        <Link href="/" class="side-brand"><Logo /> Kurz</Link>
-        <nav class="side-nav" aria-label="Main">
-          {NAV.map((n) => (
-            <Link key={n.href} href={n.href} class={n.match(path) ? "active" : ""} aria-current={n.match(path) ? "page" : undefined}>
-              <Icon name={n.icon} size={18} /> {n.label}
-            </Link>
-          ))}
-          <p class="side-label">Resources</p>
-          <a class="side-link" href="https://github.com/mddanishyusuf/kurz#api" target="_blank" rel="noopener">
-            <Icon name="book" size={18} /> API docs
-          </a>
-          <a class="side-link" href="https://github.com/mddanishyusuf/kurz" target="_blank" rel="noopener">
-            <Icon name="github" size={18} /> GitHub
-          </a>
-        </nav>
-        <div class="side-foot">
-          <div class="account">
-            <span class="avatar">{(email ?? "A")[0]}</span>
-            <span class="account-text">
-              <b>Admin</b>
-              <span>{email ?? ""}</span>
-            </span>
-            <button class="icon-btn" aria-label="Sign out" title="Sign out" onClick={logout}><Icon name="logout" /></button>
-          </div>
-        </div>
-      </aside>
-      <div class="main">
-        <header class="mobile-top">
-          <div class="mobile-row">
-            <Link href="/" class="side-brand"><Logo /> Kurz</Link>
-            <button class="icon-btn" aria-label="Sign out" onClick={logout}><Icon name="logout" /></button>
-          </div>
-          <nav class="mobile-nav" aria-label="Main">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <Link href="/" class="brand"><Logo /> Kurz</Link>
+          <nav class="tabs" aria-label="Main">
             {NAV.map((n) => (
-              <Link key={n.href} href={n.href} class={n.match(path) ? "active" : ""}>{n.label}</Link>
+              <Link key={n.href} href={n.href} class={n.match(path) ? "active" : ""} aria-current={n.match(path) ? "page" : undefined}>
+                {n.label}
+              </Link>
             ))}
           </nav>
-        </header>
-        <main key={path}>{page}</main>
-      </div>
+          <div class="top-actions">
+            <a class="icon-btn" href="https://github.com/mddanishyusuf/kurz" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+              <Icon name="github" size={18} />
+            </a>
+            <Menu label="Account" btnClass="avatar-btn" trigger={<span class="avatar">{(email ?? "A")[0]}</span>}>
+              {(close) => (
+                <>
+                  <div class="menu-head">
+                    <b>Admin</b>
+                    <span>{email ?? ""}</span>
+                  </div>
+                  <a href="https://github.com/mddanishyusuf/kurz#api" target="_blank" rel="noopener" onClick={close}>
+                    <Icon name="book" /> API docs
+                  </a>
+                  <button onClick={() => { close(); logout(); }}><Icon name="logout" /> Sign out</button>
+                </>
+              )}
+            </Menu>
+          </div>
+        </div>
+      </header>
+      <main key={path}>{page}</main>
     </div>
   );
 }
