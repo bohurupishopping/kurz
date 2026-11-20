@@ -82,7 +82,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .tabs a { flex: none; }
 }
 
-.logo { width: 26px; height: 26px; border-radius: 8px; background: var(--primary); color: var(--primary-fg); display: grid; place-items: center; flex: none; }
+.logo { display: block; flex: none; }
 
 .container { max-width: 1144px; margin: 0 auto; padding: 40px 48px 80px; }
 @media (max-width: 860px) { .container { padding: 28px 16px 64px; } }

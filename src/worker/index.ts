@@ -5,7 +5,7 @@ import { ensureSchema } from "./db/schema";
 import authRoutes from "./routes/auth";
 import apiRoutes from "./routes/api";
 import { handleRedirect } from "./routes/redirect";
-import { notFoundPage } from "./lib/pages";
+import { LOGO_SVG, notFoundPage } from "./lib/pages";
 
 const app = new Hono<AppEnv>();
 
@@ -42,7 +42,9 @@ app.get("/_/*", async (c) => {
 });
 
 app.get("/robots.txt", () => new Response("User-agent: *\nDisallow: /_/\n", { headers: { "content-type": "text/plain" } }));
-app.get("/favicon.ico", () => new Response(null, { status: 204 }));
+app.get("/favicon.ico", () =>
+  new Response(LOGO_SVG, { headers: { "content-type": "image/svg+xml", "cache-control": "public, max-age=86400" } }),
+);
 
 // ---- Short links ----
 app.on(["GET", "HEAD", "POST"], "*", async (c) => {

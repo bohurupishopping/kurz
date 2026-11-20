@@ -1,3 +1,5 @@
+<p><img src="docs/logo.svg" width="56" height="56" alt="Kurz logo"></p>
+
 # Kurz
 
 **A light, fast, open-source link shortener that runs entirely on Cloudflare.**

@@ -4,12 +4,16 @@ export function esc(s: string | null | undefined): string {
   return String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
+// The Kurz mark: a K whose upper arm is an arrow pointing out. Same as docs/logo.svg.
+export const LOGO_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#f9f9f9"/><g fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 8v16M14 16l8 8" stroke="#0d0d0d"/><path d="M14 16l8.5-8.5M16.5 7.5h6v6" stroke="#3a83f7"/></g></svg>';
+
 const STYLE = `
 :root{color-scheme:dark;--bg:#212121;--fg:#ededed;--muted:#afafaf;--line:rgb(255 255 255/.15);--primary:#f9f9f9;--primary-fg:#0d0d0d;--brand:#3a83f7}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%}
 body{background:var(--bg);color:var(--fg);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;display:grid;place-items:start center;min-height:100vh;padding:18vh 16px 32px}
 main{width:100%;max-width:360px}
-.mark{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--primary);color:var(--primary-fg);margin-bottom:24px}
+.mark{display:block;margin-bottom:24px}
 h1{font-size:28px;line-height:36px;font-weight:400;letter-spacing:-.02em;margin:0 0 6px}
 p{color:var(--muted);margin:0 0 28px}
 form{display:grid;gap:12px}
@@ -21,7 +25,7 @@ button:hover{background:rgb(249 249 249/.85)}
 `;
 
 function page(title: string, body: string, status = 200): Response {
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${esc(title)}</title><style>${STYLE}</style></head><body><main>${body}</main></body></html>`;
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><link rel="icon" href="/favicon.ico"><title>${esc(title)}</title><style>${STYLE}</style></head><body><main>${body}</main></body></html>`;
   return new Response(html, {
     status,
     headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-frame-options": "DENY" },
@@ -29,17 +33,17 @@ function page(title: string, body: string, status = 200): Response {
 }
 
 export function notFoundPage(): Response {
-  return page("Link not found", `<div class="mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 13l9-9M10.5 10 17 20"/></svg></div><h1>Link not found</h1><p>This short link doesn't exist or was removed.</p>`, 404);
+  return page("Link not found", `<div class="mark">${LOGO_SVG}</div><h1>Link not found</h1><p>This short link doesn't exist or was removed.</p>`, 404);
 }
 
 export function expiredPage(): Response {
-  return page("Link expired", `<div class="mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 13l9-9M10.5 10 17 20"/></svg></div><h1>This link has expired</h1><p>It's no longer available.</p>`, 410);
+  return page("Link expired", `<div class="mark">${LOGO_SVG}</div><h1>This link has expired</h1><p>It's no longer available.</p>`, 410);
 }
 
 export function passwordPage(error = false): Response {
   return page(
     "Password required",
-    `<div class="mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 13l9-9M10.5 10 17 20"/></svg></div><h1>Password required</h1><p>This link is protected. Enter the password to continue.</p>
+    `<div class="mark">${LOGO_SVG}</div><h1>Password required</h1><p>This link is protected. Enter the password to continue.</p>
 <form method="post"><input type="password" name="password" placeholder="Password" autofocus required autocomplete="current-password">${
       error ? `<p class="err">Wrong password. Try again.</p>` : ""
     }<button type="submit">Continue</button></form>`,

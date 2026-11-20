@@ -50,12 +50,14 @@ export function Icon({ name, size = 16 }: { name: keyof typeof PATHS | string; s
   );
 }
 
-export function Logo() {
+export function Logo({ size = 26 }: { size?: number }) {
   return (
-    <span class="logo">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M7 4v16M7 13l9-9M10.5 10 17 20" />
-      </svg>
-    </span>
+    <svg class="logo" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="8" fill="#f9f9f9" />
+      <g fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.5 8v16M14 16l8 8" stroke="#0d0d0d" />
+        <path d="M14 16l8.5-8.5M16.5 7.5h6v6" stroke="#3a83f7" />
+      </g>
+    </svg>
   );
 }

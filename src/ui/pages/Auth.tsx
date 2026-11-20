@@ -7,7 +7,7 @@ import { Logo } from "../components/Icon";
 function AuthShell({ children, foot }: { children: ComponentChildren; foot?: ComponentChildren }) {
   return (
     <div class="auth">
-      <div class="auth-top"><Logo /> Kurz</div>
+      <div class="auth-top"><Logo size={28} /> Kurz</div>
       <div class="auth-body">
         <div class="auth-card">
           {children}
