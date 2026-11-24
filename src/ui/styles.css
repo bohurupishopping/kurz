@@ -471,6 +471,25 @@ details.section > .inner { display: grid; gap: 12px; padding: 16px; }
 
 [id] { scroll-margin-top: 84px; }
 
+/* ---------- API docs ---------- */
+.api-doc h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.api-doc .sub { margin: 0; }
+.api-doc p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.code-block { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--soft); }
+.code-block-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 6px 6px 6px 16px; border-bottom: 1px solid var(--line);
+  color: var(--muted); font-size: 0.75rem; font-weight: 700;
+}
+.code-block pre { margin: 0; padding: 14px 16px; overflow-x: auto; color: var(--fg-2); font: 12.5px/1.6 var(--mono); }
+.code-block--prompt pre { max-height: 300px; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--font); font-size: 13px; }
+.api-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 20px; }
+.api-table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 13px; }
+.api-table th, .api-table td { padding: 10px 14px; text-align: left; vertical-align: top; border-top: 1px solid var(--line-soft); }
+.api-table thead th { border-top: 0; color: var(--muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+.api-table td:first-child, .api-table td:nth-child(2) { white-space: nowrap; }
+.api-table td:last-child { color: var(--muted); }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
   .top-nav { max-width: calc(100vw - 220px); }
